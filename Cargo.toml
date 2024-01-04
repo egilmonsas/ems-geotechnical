@@ -1,0 +1,8 @@
+[package]
+name = "ems-geotechnical"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rstest = "0.18.2"
+zequality={git="https://github.com/egilmonsas/zequality"}
