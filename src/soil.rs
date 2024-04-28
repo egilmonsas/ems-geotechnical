@@ -34,6 +34,10 @@ impl SoilProfile {
 
         total_stress_at_depth.map(|sigma| sigma - pore_pressure_at_depth)
     }
+    pub fn pc(&self, depth: f64) -> Option<f64> {
+        let x = self.get_soil_layer(depth)?;
+        todo!()
+    }
     pub fn in_situ_total_stress(&self, depth: f64) -> Option<f64> {
         if depth < 0.0 {
             return None;
@@ -95,13 +99,14 @@ impl SoilProfile {
         let mut settlement = 0.0;
         while z < self.depth_to_bedrock() {
             let eval_depth = z + DZ / 2.0;
-            let p_delta = self.pore_pressure_profile.eval(eval_depth) - drawdown.eval(eval_depth);
+            let p0 = self.in_situ_effective_stress(z).unwrap();
+            let pd = self.pore_pressure_profile.eval(eval_depth) - drawdown.eval(eval_depth);
 
             let strain = self
                 .get_soil_layer(z)
                 .unwrap()
                 .soil_model
-                .compute_strain(p_delta);
+                .compute_strain(p0, pd);
 
             let d_epsilon = strain * DZ;
             settlement += d_epsilon;
@@ -133,8 +138,8 @@ impl Debug for dyn SoilModel {
 }
 pub trait SoilModel {
     fn unit_weight(&self) -> f64;
-    fn compute_strain(&self, p_delta: f64) -> f64;
-    fn elastic_modulus(&self) -> f64;
+    fn compute_strain(&self, p0: f64, pd: f64) -> f64;
+    fn elastic_modulus(&self, p0: f64, pd: f64) -> f64;
 }
 
 pub struct Clay {
@@ -165,12 +170,19 @@ impl SoilModel for Clay {
         self.unit_weight
     }
 
-    fn compute_strain(&self, p_delta: f64) -> f64 {
-        p_delta / self.elastic_modulus()
+    fn compute_strain(&self, p0: f64, pd: f64) -> f64 {
+        pd / self.elastic_modulus(p0, pd)
     }
 
-    fn elastic_modulus(&self) -> f64 {
-        self.M
+    fn elastic_modulus(&self, p0: f64, pd: f64) -> f64 {
+        let pc = self.pc(p0);
+        if p0 + pd < pc {
+            self.M
+        } else if p0 > pc {
+            self.m * (p0 + pd / 2.0)
+        } else {
+            ((pc - p0) * self.M + self.m * (pc + (pd - pc - p0) / 2.0) * (p0 + pd - pc)) / (pd - p0)
+        }
 
         // M for NC clay
     }
