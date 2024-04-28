@@ -23,18 +23,18 @@ impl SoilProfile {
 }
 
 impl SoilProfile {
-    fn depth_to_bedrock(&self) -> f64 {
+    pub fn depth_to_bedrock(&self) -> f64 {
         self.soil_layers
             .iter()
             .fold(0.0, |acc, layer| acc + layer.thickness)
     }
-    fn in_situ_effective_stress(&self, depth: f64) -> Option<f64> {
+    pub fn in_situ_effective_stress(&self, depth: f64) -> Option<f64> {
         let total_stress_at_depth = self.in_situ_total_stress(depth);
         let pore_pressure_at_depth = self.pore_pressure_profile.eval(depth);
 
         total_stress_at_depth.map(|sigma| sigma - pore_pressure_at_depth)
     }
-    fn in_situ_total_stress(&self, depth: f64) -> Option<f64> {
+    pub fn in_situ_total_stress(&self, depth: f64) -> Option<f64> {
         if depth < 0.0 {
             return None;
         }
@@ -63,7 +63,7 @@ impl SoilProfile {
             }
         }
     }
-    fn get_soil_layer(&self, depth: f64) -> Option<&SoilLayer> {
+    pub fn get_soil_layer(&self, depth: f64) -> Option<&SoilLayer> {
         if depth < 0.0 {
             return None;
         }
@@ -89,7 +89,7 @@ impl SoilProfile {
         }
     }
 
-    fn compute_settlement(&self, drawdown: ProfilePorePressure) -> f64 {
+    pub fn compute_settlement(&self, drawdown: ProfilePorePressure) -> f64 {
         const DZ: f64 = 0.5;
         let mut z = 0.0;
         let mut settlement = 0.0;

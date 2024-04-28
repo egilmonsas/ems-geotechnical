@@ -7,7 +7,7 @@ use points::*;
 use profile::Profile;
 
 #[derive(Debug)]
-struct ProfilePorePressure {
+pub struct ProfilePorePressure {
     points: Vec<Point>,
 }
 
