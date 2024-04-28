@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use zequality::{assert_zeq, Zeq};
+
 use crate::{profile::Profile, ProfilePorePressure};
 
 #[derive(Debug, Default)]
@@ -94,12 +96,12 @@ impl SoilProfile {
     }
 
     pub fn compute_settlement(&self, drawdown: ProfilePorePressure) -> f64 {
-        const DZ: f64 = 0.5;
+        const DZ: f64 = 0.1;
         let mut z = 0.0;
         let mut settlement = 0.0;
-        while z < self.depth_to_bedrock() {
+        while z + DZ / 2.0 < self.depth_to_bedrock() {
             let eval_depth = z + DZ / 2.0;
-            let p0 = self.in_situ_effective_stress(z).unwrap();
+            let p0 = self.in_situ_effective_stress(eval_depth).unwrap();
             let pd = self.pore_pressure_profile.eval(eval_depth) - drawdown.eval(eval_depth);
 
             let strain = self
@@ -107,8 +109,8 @@ impl SoilProfile {
                 .unwrap()
                 .soil_model
                 .compute_strain(p0, pd);
-
             let d_epsilon = strain * DZ;
+
             settlement += d_epsilon;
             z += DZ;
         }
@@ -176,7 +178,9 @@ impl SoilModel for Clay {
 
     fn elastic_modulus(&self, p0: f64, pd: f64) -> f64 {
         let pc = self.pc(p0);
-        dbg!(p0, pc, pd);
+        if pd < 0.001 {
+            return self.M;
+        }
         if (p0 + pd) < pc {
             self.M
         } else if p0 > pc {
@@ -184,7 +188,7 @@ impl SoilModel for Clay {
         } else {
             let d1 = pc - p0;
             let d2 = (p0 + pd - pc);
-            assert_eq!(d1 + d2, pd);
+            assert_zeq!(d1 + d2, pd * 1.0);
 
             let w1 = d1 * self.M;
             let w2 = d2 * (self.m * (pc + d2 / 2.0));

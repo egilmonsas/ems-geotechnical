@@ -6,7 +6,7 @@ pub mod soil;
 use points::*;
 use profile::Profile;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProfilePorePressure {
     points: Vec<Point>,
 }
@@ -27,19 +27,20 @@ impl ProfilePorePressure {
     }
 
     pub fn drawdown_profile(&self, d_u_0: f64) -> Self {
-        const influence_depth: f64 = 5.0;
-        const DZ: f64 = 1.0;
+        const influence_depth: f64 = 10.0;
+        const DZ: f64 = 0.1;
         let total_depth = self.points.last().unwrap().x();
         let mut new_points = vec![];
         let mut z = 0.0;
-        while z <= total_depth {
+        while z < total_depth {
             let u_0 = self.eval(z);
 
             if z >= total_depth - influence_depth {
                 let elapsed_depth = total_depth - z;
                 let d_u = d_u_0 * (influence_depth - elapsed_depth) / influence_depth;
+                let u = u_0 + d_u;
 
-                new_points.push(Point::new(z, u_0 + d_u))
+                new_points.push(Point::new(z, u.max(0.0)))
             } else {
                 new_points.push(Point::new(z, u_0))
             }
