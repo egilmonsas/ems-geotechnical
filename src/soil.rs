@@ -116,6 +116,14 @@ pub struct SoilLayer {
     thickness: f64,
     soil_model: Box<dyn SoilModel>,
 }
+impl SoilLayer {
+    pub fn new(thickness: f64, soil_model: Box<dyn SoilModel>) -> Self {
+        Self {
+            thickness,
+            soil_model,
+        }
+    }
+}
 impl Debug for dyn SoilModel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SoilModel")
