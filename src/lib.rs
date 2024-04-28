@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-mod points;
-mod profile;
-mod soil;
+pub mod points;
+pub mod profile;
+pub mod soil;
 
 use points::*;
 use profile::Profile;
