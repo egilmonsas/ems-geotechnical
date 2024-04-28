@@ -20,13 +20,13 @@ impl Default for ProfilePorePressure {
 }
 
 impl ProfilePorePressure {
-    fn new(points: Vec<Point>) -> Self {
+    pub fn new(points: Vec<Point>) -> Self {
         let mut copy = points;
         copy.sort();
         Self { points: copy }
     }
 
-    fn drawdown_profile(&self, d_u_0: f64) -> Self {
+    pub fn drawdown_profile(&self, d_u_0: f64) -> Self {
         const influence_depth: f64 = 5.0;
         const DZ: f64 = 1.0;
         let total_depth = self.points.last().unwrap().x();
