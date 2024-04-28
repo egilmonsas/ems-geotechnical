@@ -176,12 +176,20 @@ impl SoilModel for Clay {
 
     fn elastic_modulus(&self, p0: f64, pd: f64) -> f64 {
         let pc = self.pc(p0);
-        if p0 + pd < pc {
+        dbg!(p0, pc, pd);
+        if (p0 + pd) < pc {
             self.M
         } else if p0 > pc {
             self.m * (p0 + pd / 2.0)
         } else {
-            ((pc - p0) * self.M + self.m * (pc + (pd - pc - p0) / 2.0) * (p0 + pd - pc)) / (pd - p0)
+            let d1 = pc - p0;
+            let d2 = (p0 + pd - pc);
+            assert_eq!(d1 + d2, pd);
+
+            let w1 = d1 * self.M;
+            let w2 = d2 * (self.m * (pc + d2 / 2.0));
+
+            (w1 + w2) / (pd)
         }
 
         // M for NC clay
@@ -196,6 +204,20 @@ mod tests {
     use super::*;
     use rstest::rstest;
     use zequality::*;
+    #[test]
+    fn test_elastic_modulus() {
+        let soil_layers = Clay {
+            over_consolidation_ratio: 1.2,
+            ..Default::default()
+        };
+
+        dbg!(soil_layers.elastic_modulus(100.0, 0.0));
+        dbg!(soil_layers.elastic_modulus(100.0, 10.0));
+        dbg!(soil_layers.elastic_modulus(100.0, 20.0));
+        dbg!(soil_layers.elastic_modulus(100.0, 30.0));
+        dbg!(soil_layers.elastic_modulus(100.0, 40.0));
+    }
+
     #[test]
     fn create_soil_layer() {
         let soil_layer = SoilLayer {
