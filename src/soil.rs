@@ -138,11 +138,12 @@ pub trait SoilModel {
 }
 
 pub struct Clay {
-    unit_weight: f64,
-    over_consolidation_ratio: f64,
-    M: f64,
-    m: f64,
+    pub unit_weight: f64,
+    pub over_consolidation_ratio: f64,
+    pub M: f64,
+    pub m: f64,
 }
+
 impl Default for Clay {
     fn default() -> Self {
         Self {
