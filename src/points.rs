@@ -19,7 +19,7 @@ impl Point {
 }
 impl Ord for Point {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(&other).unwrap()
+        self.partial_cmp(other).unwrap()
     }
 }
 impl Eq for Point {}
