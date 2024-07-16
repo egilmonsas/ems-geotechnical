@@ -2,7 +2,9 @@ use std::fmt::Debug;
 #[allow(clippy::module_name_repetitions)]
 pub trait SoilModel {
     fn unit_weight(&self) -> f64;
-    fn compute_strain(&self, p0: f64, pd: f64) -> f64;
+    fn compute_strain(&self, p0: f64, pd: f64) -> f64 {
+        pd / self.elastic_modulus(p0, pd)
+    }
     fn elastic_modulus(&self, p0: f64, pd: f64) -> f64;
 }
 impl Debug for dyn SoilModel {
@@ -13,11 +15,47 @@ impl Debug for dyn SoilModel {
     }
 }
 #[allow(non_snake_case)]
+pub struct General {
+    pub unit_weight: f64,
+    pub p_ref: f64,
+    pub m: f64,
+    pub a: f64,
+}
+
+impl Default for General {
+    fn default() -> Self {
+        Self {
+            unit_weight: 19.0,
+            m: 20.0,
+            a: 1.0,
+            p_ref: 0.0,
+        }
+    }
+}
+impl SoilModel for General {
+    fn unit_weight(&self) -> f64 {
+        self.unit_weight
+    }
+    #[allow(clippy::cast_precision_loss)]
+    fn elastic_modulus(&self, p0: f64, pd: f64) -> f64 {
+        const LOAD_STEPS: usize = 10;
+        const SIGMA_REF: f64 = 100.0;
+        let dp = pd / (LOAD_STEPS - 1) as f64;
+
+        (0..LOAD_STEPS).fold(0.0, |acc, i| {
+            let sigma_m = p0 + dp * (0.5 + i as f64);
+            acc + self.m * SIGMA_REF * (sigma_m / SIGMA_REF).powf(1.0 - self.a)
+        }) / (LOAD_STEPS as f64)
+    }
+}
+
+#[allow(non_snake_case)]
 pub struct Clay {
     pub unit_weight: f64,
     pub over_consolidation_ratio: f64,
     pub M: f64,
     pub m: f64,
+    pub p_ref: f64,
 }
 
 impl Default for Clay {
@@ -27,12 +65,25 @@ impl Default for Clay {
             over_consolidation_ratio: 1.0,
             M: 5000.0,
             m: 20.0,
+            p_ref: 0.0,
         }
     }
 }
 impl Clay {
-    fn pc(&self, sigma_0: f64) -> f64 {
-        self.over_consolidation_ratio * sigma_0
+    /// # TODO
+    /// 1. Quality control this shit
+    fn pc(&self, p_0: f64) -> f64 {
+        self.over_consolidation_ratio * p_0
+    }
+    /// # TODO
+    /// 1. Quality control this shit
+    fn stiffness_overconsolidated(&self) -> f64 {
+        self.M
+    }
+    /// # TODO
+    /// 1. Quality control this shit
+    fn stiffness_normalconsolidated(&self, p0: f64, pd: f64) -> f64 {
+        self.m * (p0 + pd / 2.0 - self.p_ref)
     }
 }
 
@@ -41,29 +92,28 @@ impl SoilModel for Clay {
         self.unit_weight
     }
 
-    fn compute_strain(&self, p0: f64, pd: f64) -> f64 {
-        pd / self.elastic_modulus(p0, pd)
-    }
-
+    /// # TODO
+    /// 1. Quality control this shit
     fn elastic_modulus(&self, p0: f64, pd: f64) -> f64 {
         let pc = self.pc(p0);
         if pd < 0.001 {
             return self.M;
         }
         if (p0 + pd) < pc {
-            self.M
+            // Pure overconsolidated behaviour
+            self.stiffness_overconsolidated()
         } else if p0 > pc {
-            self.m * (p0 + pd / 2.0)
+            // Pure normalconsolidated behaviour
+            self.stiffness_normalconsolidated(p0, pd)
         } else {
-            let d1 = pc - p0;
-            let d2 = p0 + pd - pc;
+            // Mixed behaviour -> return a weighted average of stiffnesses
+            let w1 = pc - p0;
+            let w2 = p0 + pd - pc;
 
-            let w1 = d1 * self.M;
-            let w2 = d2 * (self.m * (pc + d2 / 2.0));
+            let a = w1 * self.stiffness_overconsolidated();
+            let b = w2 * self.stiffness_normalconsolidated(p0, pd);
 
-            (w1 + w2) / (pd)
+            (a + b) / (pd)
         }
-
-        // M for NC clay
     }
 }
