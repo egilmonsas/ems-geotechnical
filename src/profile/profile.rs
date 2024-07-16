@@ -1,4 +1,4 @@
-use crate::points::Point;
+use crate::profile::point::Point;
 
 pub trait Profile {
     // Associated function signature; `Self` refers to the implementor type.

@@ -1,5 +1,5 @@
 use crate::hydro::ProfilePorePressure;
-use crate::points::Point;
+use crate::profile::Point;
 
 use super::{layer::*, model::*, profile::*};
 use rstest::rstest;

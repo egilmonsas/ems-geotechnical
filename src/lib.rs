@@ -2,15 +2,16 @@
 #![warn(clippy::pedantic)]
 
 pub mod hydro;
-pub mod points;
 pub mod profile;
 pub mod soil;
 
 #[cfg(test)]
 mod tests {
-    use crate::{hydro::ProfilePorePressure, points::Point, profile::Profile};
+    use crate::{
+        hydro::ProfilePorePressure,
+        profile::{Point, Profile},
+    };
 
-    
     use rstest::rstest;
 
     #[test]

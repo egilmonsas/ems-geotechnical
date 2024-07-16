@@ -28,7 +28,11 @@ impl Ord for Point {
 impl Eq for Point {}
 impl PartialOrd for Point {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
+        match self.x.partial_cmp(&other.x) {
+            Some(core::cmp::Ordering::Equal) => {}
+            ord => return ord,
+        }
+        self.y.partial_cmp(&other.y)
     }
 }
 impl PartialEq for Point {
