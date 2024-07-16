@@ -117,7 +117,7 @@ fn drawdown_settlement() {
         Point::new(20.0, 125.0),
     ]);
 
-    dbg!(soil_profile.compute_settlement(drawdown_profile));
+    dbg!(soil_profile.compute_settlement(&drawdown_profile));
 }
 
 #[rstest]

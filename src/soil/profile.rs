@@ -40,7 +40,7 @@ impl SoilProfile {
     }
     #[must_use]
     pub fn pc(&self, depth: f64) -> Option<f64> {
-        let x = self.get_soil_layer(depth)?;
+        let _x = self.get_soil_layer(depth)?;
         todo!()
     }
     #[must_use]
@@ -105,7 +105,7 @@ impl SoilProfile {
     /// # Panics
     /// Idunno dude
     #[must_use]
-    pub fn compute_settlement(&self, drawdown: ProfilePorePressure) -> f64 {
+    pub fn compute_settlement(&self, drawdown: &ProfilePorePressure) -> f64 {
         const DZ: f64 = 0.1;
         let mut z = 0.0;
         let mut settlement = 0.0;
