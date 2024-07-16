@@ -28,6 +28,7 @@ pub trait Profile {
         (self.point_below(eval_point), self.point_above(eval_point))
     }
 
+    #[must_use]
     fn lerp(point_below: &Point, point_above: &Point, eval_point: f64) -> Point {
         if point_below == point_above {
             *point_below

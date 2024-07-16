@@ -1,9 +1,11 @@
 #![allow(dead_code)]
+#![warn(clippy::pedantic)]
+
 pub mod points;
 pub mod profile;
 pub mod soil;
 
-use points::*;
+use points::Point;
 use profile::Profile;
 
 #[derive(Debug, Clone)]
@@ -20,14 +22,17 @@ impl Default for ProfilePorePressure {
 }
 
 impl ProfilePorePressure {
+    #[must_use]
     pub fn new(points: Vec<Point>) -> Self {
         let mut copy = points;
         copy.sort();
         Self { points: copy }
     }
-
+    /// # Panics
+    /// Will panic if pointslist is empty
+    #[must_use]
     pub fn drawdown_profile(&self, d_u_0: f64) -> Self {
-        const influence_depth: f64 = 10.0;
+        const INFLUENCE_DEPTH: f64 = 10.0;
         const DZ: f64 = 0.1;
         let total_depth = self.points.last().unwrap().x();
         let mut new_points = vec![];
@@ -35,14 +40,14 @@ impl ProfilePorePressure {
         while z < total_depth {
             let u_0 = self.eval(z);
 
-            if z >= total_depth - influence_depth {
+            if z >= total_depth - INFLUENCE_DEPTH {
                 let elapsed_depth = total_depth - z;
-                let d_u = d_u_0 * (influence_depth - elapsed_depth) / influence_depth;
+                let d_u = d_u_0 * (INFLUENCE_DEPTH - elapsed_depth) / INFLUENCE_DEPTH;
                 let u = u_0 + d_u;
 
-                new_points.push(Point::new(z, u.max(0.0)))
+                new_points.push(Point::new(z, u.max(0.0)));
             } else {
-                new_points.push(Point::new(z, u_0))
+                new_points.push(Point::new(z, u_0));
             }
 
             z += DZ;
@@ -90,7 +95,7 @@ mod tests {
     fn eval(#[case] points: Vec<Point>, #[case] eval_point: f64, #[case] expected: f64) {
         let profile = ProfilePorePressure::new(points);
         let result = profile.eval(eval_point);
-        approx::assert_abs_diff_eq!(result, expected)
+        approx::assert_abs_diff_eq!(result, expected);
     }
     #[test]
     fn create_profile2() {

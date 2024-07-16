@@ -7,12 +7,15 @@ pub struct Point {
 }
 
 impl Point {
+    #[must_use]
     pub fn new(x: f64, y: f64) -> Self {
         Self { x, y }
     }
+    #[must_use]
     pub fn x(&self) -> f64 {
         self.x
     }
+    #[must_use]
     pub fn y(&self) -> f64 {
         self.y
     }
@@ -25,7 +28,7 @@ impl Ord for Point {
 impl Eq for Point {}
 impl PartialOrd for Point {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.x.partial_cmp(&other.x)
+        Some(self.cmp(other))
     }
 }
 impl PartialEq for Point {

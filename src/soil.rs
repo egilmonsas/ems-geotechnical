@@ -9,10 +9,12 @@ pub struct SoilProfile {
     pore_pressure_profile: ProfilePorePressure,
 }
 impl SoilProfile {
+    #[must_use]
     pub fn with_soil_layer(mut self, soil_layers: Vec<SoilLayer>) -> Self {
         self.soil_layers = soil_layers;
         self
     }
+    #[must_use]
     pub fn with_pore_pressure_profile(
         mut self,
         pore_pressure_profile: ProfilePorePressure,
@@ -23,76 +25,86 @@ impl SoilProfile {
 }
 
 impl SoilProfile {
+    #[must_use]
     pub fn depth_to_bedrock(&self) -> f64 {
         self.soil_layers
             .iter()
             .fold(0.0, |acc, layer| acc + layer.thickness)
     }
+    #[must_use]
     pub fn in_situ_effective_stress(&self, depth: f64) -> Option<f64> {
         let total_stress_at_depth = self.in_situ_total_stress(depth);
         let pore_pressure_at_depth = self.pore_pressure_profile.eval(depth);
 
         total_stress_at_depth.map(|sigma| sigma - pore_pressure_at_depth)
     }
+    #[must_use]
     pub fn pc(&self, depth: f64) -> Option<f64> {
         let x = self.get_soil_layer(depth)?;
         todo!()
     }
+    #[must_use]
     pub fn in_situ_total_stress(&self, depth: f64) -> Option<f64> {
         if depth < 0.0 {
             return None;
         }
 
-        match depth > self.depth_to_bedrock() {
-            true => None,
-            false => {
-                let mut sum = 0.0;
-                let mut z = 0.0;
-                let mut layercount = 0;
+        if depth > self.depth_to_bedrock() {
+            None
+        } else {
+            let mut sum = 0.0;
+            let mut z = 0.0;
+            let mut layercount = 0;
 
-                while z < depth {
-                    let soil_layer = &self.soil_layers[layercount];
+            while z < depth {
+                let soil_layer = &self.soil_layers[layercount];
 
-                    if z + soil_layer.thickness < depth {
-                        z += soil_layer.thickness;
-                        sum += soil_layer.thickness * soil_layer.soil_model.unit_weight()
-                    } else {
-                        let dz = depth - z;
-                        sum += dz * soil_layer.soil_model.unit_weight();
-                        z = depth
-                    }
-                    layercount += 1
+                if z + soil_layer.thickness < depth {
+                    z += soil_layer.thickness;
+                    sum += soil_layer.thickness * soil_layer.soil_model.unit_weight();
+                } else {
+                    let dz = depth - z;
+                    sum += dz * soil_layer.soil_model.unit_weight();
+                    z = depth;
                 }
-                Some(sum)
+                layercount += 1;
             }
+            Some(sum)
         }
     }
+
+    /// # Panics
+    /// Assumed unreachable code reached
+    #[must_use]
     pub fn get_soil_layer(&self, depth: f64) -> Option<&SoilLayer> {
         if depth < 0.0 {
             return None;
         }
 
-        match depth > self.depth_to_bedrock() {
-            true => None,
-            false => {
-                let mut z = 0.0;
-                let mut layercount = 0;
+        if depth > self.depth_to_bedrock() {
+            None
+        } else {
+            let mut z = 0.0;
+            let mut layercount = 0;
 
-                while z <= depth {
-                    let soil_layer = &self.soil_layers[layercount];
+            while z <= depth {
+                let soil_layer = &self.soil_layers[layercount];
 
-                    if z + soil_layer.thickness < depth {
-                        z += soil_layer.thickness;
-                        layercount += 1
-                    } else {
-                        return Some(soil_layer);
-                    }
+                if z + soil_layer.thickness < depth {
+                    z += soil_layer.thickness;
+                    layercount += 1;
+                } else {
+                    return Some(soil_layer);
                 }
-                panic!("boi");
             }
+            // Should be unreachable code
+            panic!("Unexpected");
         }
     }
 
+    /// # Panics
+    /// Idunno dude
+    #[must_use]
     pub fn compute_settlement(&self, drawdown: ProfilePorePressure) -> f64 {
         const DZ: f64 = 0.1;
         let mut z = 0.0;
@@ -122,6 +134,7 @@ pub struct SoilLayer {
     soil_model: Box<dyn SoilModel>,
 }
 impl SoilLayer {
+    #[must_use]
     pub fn new(thickness: f64, soil_model: Box<dyn SoilModel>) -> Self {
         Self {
             thickness,
@@ -185,7 +198,7 @@ impl SoilModel for Clay {
             self.m * (p0 + pd / 2.0)
         } else {
             let d1 = pc - p0;
-            let d2 = (p0 + pd - pc);
+            let d2 = p0 + pd - pc;
 
             let w1 = d1 * self.M;
             let w2 = d2 * (self.m * (pc + d2 / 2.0));
@@ -203,7 +216,7 @@ mod tests {
     use crate::Point;
 
     use super::*;
-    use approx::*;
+
     use rstest::rstest;
     #[test]
     fn test_elastic_modulus() {
@@ -260,7 +273,7 @@ mod tests {
 
         let soil_profile = SoilProfile::default().with_soil_layer(soil_layers);
         if let Some(result) = soil_profile.in_situ_total_stress(eval_point) {
-            approx::assert_abs_diff_eq!(result, expected)
+            approx::assert_abs_diff_eq!(result, expected);
         }
     }
 
@@ -287,7 +300,7 @@ mod tests {
             .with_pore_pressure_profile(pore_pressure_profile);
 
         if let Some(result) = soil_profile.in_situ_effective_stress(eval_point) {
-            approx::assert_abs_diff_eq!(result, expected)
+            approx::assert_abs_diff_eq!(result, expected);
         }
     }
 
@@ -339,6 +352,6 @@ mod tests {
 
         let soil_profile = SoilProfile::default().with_soil_layer(soil_layers);
 
-        assert!(soil_profile.in_situ_total_stress(eval_point).is_none())
+        assert!(soil_profile.in_situ_total_stress(eval_point).is_none());
     }
 }
