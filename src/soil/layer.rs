@@ -1,6 +1,7 @@
 use super::model::SoilModel;
 
 #[derive(Debug)]
+#[allow(clippy::module_name_repetitions)]
 pub struct SoilLayer {
     pub thickness: f64,
     pub soil_model: Box<dyn SoilModel>,

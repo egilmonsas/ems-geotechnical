@@ -3,6 +3,7 @@ use crate::{hydro::ProfilePorePressure, profile::Profile};
 use super::layer::SoilLayer;
 
 #[derive(Debug, Default)]
+#[allow(clippy::module_name_repetitions)]
 
 pub struct SoilProfile {
     soil_layers: Vec<SoilLayer>,

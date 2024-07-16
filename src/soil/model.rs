@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+#[allow(clippy::module_name_repetitions)]
 pub trait SoilModel {
     fn unit_weight(&self) -> f64;
     fn compute_strain(&self, p0: f64, pd: f64) -> f64;
@@ -11,7 +12,7 @@ impl Debug for dyn SoilModel {
             .finish()
     }
 }
-
+#[allow(non_snake_case)]
 pub struct Clay {
     pub unit_weight: f64,
     pub over_consolidation_ratio: f64,
