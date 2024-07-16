@@ -1,7 +1,5 @@
 use std::fmt::Debug;
 
-use zequality::{assert_zeq, Zeq};
-
 use crate::{profile::Profile, ProfilePorePressure};
 
 #[derive(Debug, Default)]
@@ -188,7 +186,6 @@ impl SoilModel for Clay {
         } else {
             let d1 = pc - p0;
             let d2 = (p0 + pd - pc);
-            assert_zeq!(d1 + d2, pd * 1.0);
 
             let w1 = d1 * self.M;
             let w2 = d2 * (self.m * (pc + d2 / 2.0));
@@ -290,7 +287,7 @@ mod tests {
             .with_pore_pressure_profile(pore_pressure_profile);
 
         if let Some(result) = soil_profile.in_situ_effective_stress(eval_point) {
-            assert_zeq!(result, expected)
+            approx::assert_abs_diff_eq!(result, expected)
         }
     }
 
