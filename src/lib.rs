@@ -31,6 +31,7 @@ impl Profile for ProfilePorePressure {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     #[test]
     fn create_profile() {
@@ -43,8 +44,6 @@ mod tests {
 
         dbg!(profile);
     }
-    use rstest::rstest;
-    use zequality::*;
 
     #[rstest]
     #[case(vec![Point::new(0.0, 0.0),Point::new(10.0,100.0)],-20.0, 0.0)]
@@ -58,6 +57,6 @@ mod tests {
     fn eval(#[case] points: Vec<Point>, #[case] eval_point: f64, #[case] expected: f64) {
         let profile = ProfilePorePressure::new(points);
         let result = profile.eval(eval_point);
-        assert_zeq!(result, expected)
+        approx::assert_abs_diff_eq!(result, expected)
     }
 }

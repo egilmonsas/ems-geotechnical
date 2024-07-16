@@ -78,8 +78,8 @@ impl SoilModel for Clay {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use approx::*;
     use rstest::rstest;
-    use zequality::*;
     #[test]
     fn create_soil_layer() {
         let soil_layer = SoilLayer {
@@ -140,7 +140,7 @@ mod tests {
         };
 
         if let Some(result) = soil_profile.in_situ_total_stress(eval_point) {
-            assert_zeq!(result, expected)
+            approx::assert_abs_diff_eq!(result, expected)
         }
     }
 

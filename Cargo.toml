@@ -5,4 +5,6 @@ edition = "2021"
 
 [dependencies]
 rstest = "0.18.2"
-zequality={git="https://github.com/egilmonsas/zequality"}
+
+[dev-dependencies]
+approx = "0.5.0"
