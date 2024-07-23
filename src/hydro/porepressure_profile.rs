@@ -65,17 +65,58 @@ impl std::ops::Sub<Self> for ProfilePorePressure {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let xs = self
-            .points
-            .iter()
-            .chain(rhs.points.iter())
-            .map(|p| p.x)
-            .collect::<Vec<f64>>();
-
         Self::new(
-            xs.iter()
+            self.xs()
+                .iter()
+                .chain(rhs.xs().iter())
+                .copied()
+                .collect::<Vec<f64>>()
+                .unique(0.1)
+                .iter()
                 .map(|&x| Point::new(x, self.eval(x) - rhs.eval(x)))
                 .collect::<Vec<Point>>(),
         )
+    }
+}
+
+trait UniqueEnough {
+    fn unique(&self, interval: f64) -> Self;
+}
+
+impl UniqueEnough for Vec<f64> {
+    fn unique(&self, interval: f64) -> Self {
+        let mut copy = self.clone();
+        copy.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+
+        if let 0..=2 = copy.len() {
+            copy
+        } else {
+            let mut res = vec![*copy.first().unwrap()];
+
+            copy[1..copy.len() - 1].iter().for_each(|element| {
+                if (element - res.last().unwrap()) >= (interval.abs() * 0.999) {
+                    res.push(*element);
+                }
+            });
+
+            res.push(*copy.last().unwrap());
+
+            res
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unique() {
+        dbg!(vec![1.0, 1.01, 1.32, 1.1, 1.2, 1.21, 1.4].unique(0.1));
+    }
+
+    #[test]
+    fn hm() {
+        dbg!(1.2 - 1.1);
     }
 }

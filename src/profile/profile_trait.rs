@@ -5,7 +5,12 @@ pub trait Profile {
     fn new(points: Vec<Point>) -> Self;
 
     fn points(&self) -> &Vec<Point>;
-
+    fn xs(&self) -> Vec<f64> {
+        self.points().iter().map(|&p| p.x).collect::<Vec<f64>>()
+    }
+    fn ys(&self) -> Vec<f64> {
+        self.points().iter().map(|&p| p.y).collect::<Vec<f64>>()
+    }
     fn point_below(&self, eval_point: f64) -> Option<&Point> {
         self.points()
             .iter()
