@@ -9,7 +9,7 @@ pub trait Profile {
     fn point_below(&self, eval_point: f64) -> Option<&Point> {
         self.points()
             .iter()
-            .filter(|&p| p.x() <= eval_point)
+            .filter(|&p| p.x <= eval_point)
             .collect::<Vec<&Point>>()
             .last()
             .copied()
@@ -18,7 +18,7 @@ pub trait Profile {
     fn point_above(&self, eval_point: f64) -> Option<&Point> {
         self.points()
             .iter()
-            .filter(|&p| p.x() >= eval_point)
+            .filter(|&p| p.x >= eval_point)
             .collect::<Vec<&Point>>()
             .first()
             .copied()
@@ -33,8 +33,8 @@ pub trait Profile {
         if point_below == point_above {
             *point_below
         } else {
-            let x0 = point_below.x();
-            let x1 = point_above.x();
+            let x0 = point_below.x;
+            let x1 = point_above.x;
 
             point_above * ((eval_point - x0) / (x1 - x0))
                 + (point_below * ((x1 - eval_point) / (x1 - x0)))
@@ -48,12 +48,12 @@ pub trait Profile {
         match point_around {
             //case 1: x between two known points
             (Some(point_below), Some(point_above)) => {
-                Self::lerp(point_below, point_above, eval_point).y()
+                Self::lerp(point_below, point_above, eval_point).y
             }
             //case 2: x below range closest value or extrapolate? -> Not implemented yet
-            (None, Some(point_above)) => point_above.y(),
+            (None, Some(point_above)) => point_above.y,
             //case 3: x above range closest value or extrapolate? -> Not implemented yet
-            (Some(point_below), None) => point_below.y(),
+            (Some(point_below), None) => point_below.y,
             (None, None) => panic!("No points found"),
         }
     }
