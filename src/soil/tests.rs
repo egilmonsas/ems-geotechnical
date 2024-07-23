@@ -36,7 +36,7 @@ fn create_soil_profile() {
         thickness: 2.0,
         soil_model: Box::new(Clay::default()),
     };
-    let soil_profile = SoilProfile::default().with_soil_layer(vec![soil_layer, soil_layer2]);
+    let soil_profile = SoilProfile::default().with_soil_layers(vec![soil_layer, soil_layer2]);
     dbg!(soil_profile);
 }
 
@@ -56,7 +56,7 @@ fn in_situ_total_stress(#[case] eval_point: f64, #[case] expected: f64) {
         },
     ];
 
-    let soil_profile = SoilProfile::default().with_soil_layer(soil_layers);
+    let soil_profile = SoilProfile::default().with_soil_layers(soil_layers);
     if let Some(result) = soil_profile.in_situ_total_stress(eval_point) {
         approx::assert_abs_diff_eq!(result, expected);
     }
@@ -81,7 +81,7 @@ fn in_situ_effective_stress(#[case] eval_point: f64, #[case] expected: f64) {
         ProfilePorePressure::new(vec![Point::new(5.0, 0.0), Point::new(20.0, 150.0)]);
 
     let soil_profile = SoilProfile::default()
-        .with_soil_layer(soil_layers)
+        .with_soil_layers(soil_layers)
         .with_pore_pressure_profile(pore_pressure_profile);
 
     if let Some(result) = soil_profile.in_situ_effective_stress(eval_point) {
@@ -108,7 +108,7 @@ fn drawdown_settlement() {
     ]);
 
     let soil_profile = SoilProfile::default()
-        .with_soil_layer(soil_layers)
+        .with_soil_layers(soil_layers)
         .with_pore_pressure_profile(pore_pressure_profile);
 
     let drawdown_profile = ProfilePorePressure::new(vec![
@@ -135,7 +135,7 @@ fn out_of_range_returns_none(#[case] eval_point: f64) {
         },
     ];
 
-    let soil_profile = SoilProfile::default().with_soil_layer(soil_layers);
+    let soil_profile = SoilProfile::default().with_soil_layers(soil_layers);
 
     assert!(soil_profile.in_situ_total_stress(eval_point).is_none());
 }

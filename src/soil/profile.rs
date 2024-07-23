@@ -11,7 +11,7 @@ pub struct SoilProfile {
 }
 impl SoilProfile {
     #[must_use]
-    pub fn with_soil_layer(mut self, soil_layers: Vec<SoilLayer>) -> Self {
+    pub fn with_soil_layers(mut self, soil_layers: Vec<SoilLayer>) -> Self {
         self.soil_layers = soil_layers;
         self
     }
