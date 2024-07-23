@@ -26,14 +26,14 @@ impl ProfilePorePressure {
     /// # Panics
     /// Will panic if pointslist is empty
     #[must_use]
-    pub fn drawdown_profile(&self, d_u_0: f64) -> Self {
+    pub fn drawdown_profile(origin_profile: &Self, d_u_0: f64) -> Self {
         const INFLUENCE_DEPTH: f64 = 10.0;
-        const DZ: f64 = 0.1;
-        let total_depth = self.points.last().unwrap().x;
+        const DZ: f64 = 0.5;
+        let total_depth = origin_profile.points.last().unwrap().x;
         let mut new_points = vec![];
         let mut z = 0.0;
-        while z < total_depth {
-            let u_0 = self.eval(z);
+        while z <= total_depth {
+            let u_0 = origin_profile.eval(z);
 
             if z >= total_depth - INFLUENCE_DEPTH {
                 let elapsed_depth = total_depth - z;
