@@ -59,3 +59,5 @@ pub trait Profile {
         }
     }
 }
+#[cfg(test)]
+mod tests;
