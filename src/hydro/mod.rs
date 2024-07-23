@@ -1,9 +1,11 @@
+use cgmath::Vector2;
+
 use crate::profile::Point;
 use crate::profile::Profile;
 
 #[derive(Debug, Clone)]
 pub struct ProfilePorePressure {
-    points: Vec<Point>,
+    points: Vec<Vector2<f64>>,
 }
 
 impl Default for ProfilePorePressure {
@@ -18,7 +20,7 @@ impl ProfilePorePressure {
     #[must_use]
     pub fn new(points: Vec<Point>) -> Self {
         let mut copy = points;
-        copy.sort();
+        copy.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap_or(std::cmp::Ordering::Equal));
         Self { points: copy }
     }
     /// # Panics
@@ -27,7 +29,7 @@ impl ProfilePorePressure {
     pub fn drawdown_profile(&self, d_u_0: f64) -> Self {
         const INFLUENCE_DEPTH: f64 = 10.0;
         const DZ: f64 = 0.1;
-        let total_depth = self.points.last().unwrap().x();
+        let total_depth = self.points.last().unwrap().x;
         let mut new_points = vec![];
         let mut z = 0.0;
         while z < total_depth {
