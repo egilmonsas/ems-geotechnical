@@ -1,7 +1,7 @@
 mod point;
-mod profile;
+mod profile_trait;
 pub use point::Point;
-pub use profile::Profile;
+pub use profile_trait::Profile;
 
 #[cfg(test)]
 mod tests;
