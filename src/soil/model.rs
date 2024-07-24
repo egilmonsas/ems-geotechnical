@@ -48,7 +48,7 @@ impl SoilModel for General {
         }) / (LOAD_STEPS as f64)
     }
 }
-
+#[derive(Debug)]
 #[allow(non_snake_case)]
 pub struct Clay {
     pub unit_weight: f64,
@@ -115,5 +115,37 @@ impl SoilModel for Clay {
 
             (a + b) / (pd)
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use approx::assert_relative_eq;
+
+    use super::*;
+
+    #[test]
+    fn create_clay() {
+        let clay = Clay::default();
+        dbg!(clay);
+    }
+
+    #[test]
+    fn over_consolidation_ratio() {
+        let clay = Clay {
+            over_consolidation_ratio: 1.2,
+            ..Default::default()
+        };
+        assert_relative_eq!(clay.over_consolidation_ratio, clay.pc(1.0));
+    }
+
+    #[test]
+    fn create_clay() {
+        //drawdown= 20 kpa
+        // z    | sigmatot  | sigmaeff  | delta
+        // 8    | 152       | 82        | 16.3
+        // 10   | 190       | 100       | 15.7
+        // 12.5 | 237       | 122.5     | 16.2
+        let clay = Clay::default();
+        dbg!(clay);
     }
 }

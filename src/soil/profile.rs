@@ -2,12 +2,13 @@ use crate::{hydro::ProfilePorePressure, profile::Profile};
 
 use super::layer::SoilLayer;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 #[allow(clippy::module_name_repetitions)]
-
+#[derive(Default)]
 pub struct SoilProfile {
     soil_layers: Vec<SoilLayer>,
     pore_pressure_profile: ProfilePorePressure,
+    manual_bedrock_depth: Option<f64>,
 }
 impl SoilProfile {
     #[must_use]
@@ -23,14 +24,25 @@ impl SoilProfile {
         self.pore_pressure_profile = pore_pressure_profile;
         self
     }
+    #[must_use]
+    pub fn with_depth_to_bedrock(mut self, manual_bedrock_depth: f64) -> Self {
+        self.manual_bedrock_depth = Some(manual_bedrock_depth);
+        self
+    }
+    pub fn set_depth_to_bedrock(&mut self, manual_bedrock_depth: f64) {
+        self.manual_bedrock_depth = Some(manual_bedrock_depth);
+    }
 }
-
 impl SoilProfile {
     #[must_use]
     pub fn depth_to_bedrock(&self) -> f64 {
-        self.soil_layers
-            .iter()
-            .fold(0.0, |acc, layer| acc + layer.thickness)
+        match self.manual_bedrock_depth {
+            Some(v) => v,
+            None => self
+                .soil_layers
+                .iter()
+                .fold(0.0, |acc, layer| acc + layer.thickness),
+        }
     }
     #[must_use]
     pub fn in_situ_effective_stress(&self, depth: f64) -> Option<f64> {
