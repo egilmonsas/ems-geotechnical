@@ -1,5 +1,6 @@
 use cgmath::Vector2;
 
+use crate::linspace;
 use crate::profile::Point;
 use crate::profile::Profile;
 
@@ -28,25 +29,25 @@ impl ProfilePorePressure {
     #[must_use]
     pub fn drawdown_profile(origin_profile: &Self, d_u_0: f64) -> Self {
         const INFLUENCE_DEPTH: f64 = 10.0;
-        const DZ: f64 = 0.5;
+        const n: usize = 100;
         let total_depth = origin_profile.points.last().unwrap().x;
-        let mut new_points = vec![];
-        let mut z = 0.0;
-        while z <= total_depth {
-            let u_0 = origin_profile.eval(z);
 
-            if z >= total_depth - INFLUENCE_DEPTH {
-                let elapsed_depth = total_depth - z;
-                let d_u = d_u_0 * (INFLUENCE_DEPTH - elapsed_depth) / INFLUENCE_DEPTH;
-                let u = u_0 + d_u;
+        let new_points = linspace(0.0, total_depth, n)
+            .iter()
+            .map(|&z| {
+                let u_0 = origin_profile.eval(z);
+                if z >= total_depth - INFLUENCE_DEPTH {
+                    let elapsed_depth = total_depth - z;
+                    let d_u = d_u_0 * (INFLUENCE_DEPTH - elapsed_depth) / INFLUENCE_DEPTH;
+                    let u = u_0 + d_u;
 
-                new_points.push(Point::new(z, u.max(0.0)));
-            } else {
-                new_points.push(Point::new(z, u_0));
-            }
+                    Point::new(z, u.max(0.0))
+                } else {
+                    Point::new(z, u_0)
+                }
+            })
+            .collect::<Vec<Point>>();
 
-            z += DZ;
-        }
         ProfilePorePressure::new(new_points)
     }
 }

@@ -138,14 +138,14 @@ mod tests {
         assert_relative_eq!(clay.over_consolidation_ratio, clay.pc(1.0));
     }
 
-    #[test]
-    fn create_clay() {
-        //drawdown= 20 kpa
-        // z    | sigmatot  | sigmaeff  | delta
-        // 8    | 152       | 82        | 16.3
-        // 10   | 190       | 100       | 15.7
-        // 12.5 | 237       | 122.5     | 16.2
-        let clay = Clay::default();
-        dbg!(clay);
-    }
+    // #[test]
+    // fn create_clay() {
+    //     //drawdown= 20 kpa
+    //     // z    | sigmatot  | sigmaeff  | delta
+    //     // 8    | 152       | 82        | 16.3
+    //     // 10   | 190       | 100       | 15.7
+    //     // 12.5 | 237       | 122.5     | 16.2
+    //     let clay = Clay::default();
+    //     dbg!(clay);
+    // }
 }

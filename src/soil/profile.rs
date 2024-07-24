@@ -1,4 +1,4 @@
-use crate::{hydro::ProfilePorePressure, profile::Profile};
+use crate::{delta, hydro::ProfilePorePressure, linspace, profile::Profile};
 
 use super::layer::SoilLayer;
 
@@ -119,24 +119,22 @@ impl SoilProfile {
     /// Idunno dude
     #[must_use]
     pub fn compute_settlement(&self, drawdown: &ProfilePorePressure) -> f64 {
-        const DZ: f64 = 0.1;
-        let mut z = 0.0;
-        let mut settlement = 0.0;
-        while z + DZ / 2.0 < self.depth_to_bedrock() {
-            let eval_depth = z + DZ / 2.0;
-            let p0 = self.in_situ_effective_stress(eval_depth).unwrap();
-            let pd = self.pore_pressure_profile.eval(eval_depth) - drawdown.eval(eval_depth);
+        const n: usize = 100;
+        let delta = delta(0.0, self.depth_to_bedrock(), n);
 
-            let strain = self
-                .get_soil_layer(z)
-                .unwrap()
-                .soil_model
-                .compute_strain(p0, pd);
-            let d_epsilon = strain * DZ;
+        linspace(0.0, self.depth_to_bedrock() - delta, n)
+            .iter()
+            .fold(0.0, |acc, &z| {
+                let eval_depth = z + delta / 2.0;
+                let p0 = self.in_situ_effective_stress(eval_depth).unwrap();
+                let pd = self.pore_pressure_profile.eval(eval_depth) - drawdown.eval(eval_depth);
 
-            settlement += d_epsilon;
-            z += DZ;
-        }
-        settlement
+                let strain = self
+                    .get_soil_layer(eval_depth)
+                    .unwrap()
+                    .soil_model
+                    .compute_strain(p0, pd);
+                acc + strain * delta
+            })
     }
 }
